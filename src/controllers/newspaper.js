@@ -84,7 +84,7 @@ export const getNewspapers = async (req, res) => {
 
 // New function: get NP user details with newspaper info
 export const getNpUserWithNewspaper = async (req, res) => {
-    console.log("Fetching NP user for ID:", req.params);
+    console.log("Fetching NP user for ID:");
  
     try {
         const { user_id } = req.params;
@@ -104,9 +104,10 @@ export const getNpUserWithNewspaper = async (req, res) => {
           NPUser_Login.fax_no,
           NPUser_Login.address as loginaddr, 
           NPUser_Login.status, 
+          NewsPaper.District_Text,
           NewsPaper.np_name + '-' + NewsPaper.edition AS np_name, 
           NewsPaper.NPADDR1 + ',' + ISNULL(NewsPaper.NPADDR2 + ',', '') + ISNULL(NewsPaper.NPADDR3 + ',', '') +
-          NewsPaper.NPCITY_text + ',' + NewsPaper.NPSTATE_text + ',' + NewsPaper.NPPOSTAL_cd AS address
+          NewsPaper.NPCITY_text + ',' + NewsPaper.NPSTATE_text + ',' + NewsPaper.NPPOSTAL_cd AS address  
         FROM NewsPaper
         INNER JOIN NPUser_Login ON NewsPaper.np_cd = NPUser_Login.np_cd
         WHERE NewsPaper.status = 1
@@ -134,10 +135,86 @@ export const getNpUserWithNewspaper = async (req, res) => {
       });
     }
   };
+
+  export const getBankDetailsByUser = async (req, res) => {
+
+    try {
+      const { user_id } = req.params;
   
+      if (!user_id) {
+        return res.status(400).json({ message: "user_id is required" });
+      }
+      const pool = await sql.connect(config); 
+      const query = `select DISTINCT 
+      np_cd,
+      state,
+      district,
+      bank_name,
+      branch_name,
+      ifsc_code,
+      micr_code,
+      account_no,
+      account_holder_name 
+      From NPUser_BankDetail
+      WHERE NPUser_BankDetail.user_id = @user_id`;
+
+      const result = await pool.request()
+      .input("user_id", sql.VarChar, user_id)
+      .query(query);
+
+    if (result.recordset.length === 0) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: result.recordset[0]
+    });
   
+    } catch (error) {
+      console.error("Error fetching bank details:", error);
+      res.status(500).json({ message: "Server error", error });
+    }
+  };
+
+  export const getGSTDetailsByUser = async (req, res) => {
+
+    try {
+      const { user_id } = req.params;
   
+      if (!user_id) {
+        return res.status(400).json({ message: "user_id is required" });
+      }
+      const pool = await sql.connect(config); 
+      const query = `select DISTINCT 
+      np_cd,
+      state,
+      district,
+      bank_name,
+      branch_name,
+      ifsc_code,
+      micr_code,
+      account_no,
+      account_holder_name 
+      From NPUser_BankDetail
+      WHERE NPUser_BankDetail.user_id = @user_id`;
+
+      const result = await pool.request()
+      .input("user_id", sql.VarChar, user_id)
+      .query(query);
+
+    if (result.recordset.length === 0) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: result.recordset[0]
+    });
   
-  
-  
+    } catch (error) {
+      console.error("Error fetching bank details:", error);
+      res.status(500).json({ message: "Server error", error });
+    }
+  };
   
