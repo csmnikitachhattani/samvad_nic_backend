@@ -136,6 +136,96 @@ export const getNpUserWithNewspaper = async (req, res) => {
     }
 };
 
+export const updateNpUserWithNewspaper = async (req, res) => {
+    console.log("is it got called")
+    try {
+      const { user_id } = req.params;
+      const {
+        contact_no,
+        np_cd,
+        user_name,
+        std_code,
+        landline_no,
+        email_id,
+        fax_no,
+        address,
+        status
+      } = req.body;
+  
+      const pool = await sql.connect(config);
+      console.log(user_name, "for updating things")
+      // Build dynamic update query only for provided fields
+      let fields = [];
+      let request = pool.request().input("user_id", sql.VarChar, user_id);
+  
+      if (contact_no !== undefined) {
+        fields.push("contact_no = @contact_no");
+        request.input("contact_no", sql.VarChar, contact_no);
+      }
+      if (np_cd !== undefined) {
+        fields.push("np_cd = @np_cd");
+        request.input("np_cd", sql.VarChar, np_cd);
+      }
+      if (user_name !== undefined) {
+        fields.push("user_name = @user_name");
+        request.input("user_name", sql.VarChar, user_name);
+      }
+      if (std_code !== undefined) {
+        fields.push("std_code = @std_code");
+        request.input("std_code", sql.VarChar, std_code);
+      }
+      if (landline_no !== undefined) {
+        fields.push("landline_no = @landline_no");
+        request.input("landline_no", sql.VarChar, landline_no);
+      }
+      if (email_id !== undefined) {
+        fields.push("email_id = @email_id");
+        request.input("email_id", sql.VarChar, email_id);
+      }
+      if (fax_no !== undefined) {
+        fields.push("fax_no = @fax_no");
+        request.input("fax_no", sql.VarChar, fax_no);
+      }
+      console.log("here address is", address)
+      if (address !== undefined) {
+        fields.push("address = @address");
+        request.input("address", sql.VarChar, address);
+      }
+      if (status !== undefined) {
+        fields.push("status = @status");
+        request.input("status", sql.Int, status);
+      }
+  
+      if (fields.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "No fields provided to update",
+        });
+      }
+  
+      const updateQuery = `
+        UPDATE NPUser_Login
+        SET ${fields.join(", ")}
+        WHERE user_id = @user_id
+      `;
+  
+      await request.query(updateQuery);
+  
+      return res.status(200).json({
+        success: true,
+        message: "User details updated successfully",
+      });
+  
+    } catch (error) {
+      console.error("Error updating NP user:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Server error while updating NP user",
+      });
+    }
+  };
+  
+
 export const getBankDetailsByUser = async (req, res) => {
 
     try {
