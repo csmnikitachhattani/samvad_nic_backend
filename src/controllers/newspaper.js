@@ -1,8 +1,6 @@
 import sql from "mssql";
 import config from "../config/db.js"; // note the .js extension
-
-
-// GET Newspaper List
+// get news paper API
 export const getNewspapers = async (req, res) => {
     console.log("calling this")
     try {
@@ -81,8 +79,7 @@ export const getNewspapers = async (req, res) => {
         });
     }
 };
-
-// New function: get NP user details with newspaper info
+// get newspaper profile information
 export const getNpUserWithNewspaper = async (req, res) => {
     console.log("Fetching NP user for ID:");
 
@@ -135,7 +132,7 @@ export const getNpUserWithNewspaper = async (req, res) => {
         });
     }
 };
-
+// update newspaper profilr details
 export const updateNpUserWithNewspaper = async (req, res) => {
     console.log("is it got called")
     try {
@@ -223,9 +220,8 @@ export const updateNpUserWithNewspaper = async (req, res) => {
         message: "Server error while updating NP user",
       });
     }
-  };
-  
-
+};
+// order newspaper 
 export const getBankDetailsByUser = async (req, res) => {
 
     try {
@@ -268,7 +264,7 @@ export const getBankDetailsByUser = async (req, res) => {
         res.status(500).json({ message: "Server error", error });
     }
 };
-
+// Update GST detail 
 export const getGSTDetailsByUser = async (req, res) => {
     console.log("called api gst oneś")
     try {
