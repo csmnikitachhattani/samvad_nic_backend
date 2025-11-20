@@ -15,6 +15,12 @@ app.use(
 // Body parser
 app.use(express.json());
 
+// 🔥 GLOBAL DEBUG LOGGER — ADD THIS
+app.use((req, res, next) => {
+  console.log("🔥 Incoming:", req.method, req.originalUrl);
+  next();
+});
+
 // Base API routes
 app.use("/api", route);
 
