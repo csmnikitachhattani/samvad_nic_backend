@@ -62,7 +62,7 @@ export const npBankDetailHandler = async (req, res) => {
     console.log("ye hai result " , result)
     return res.status(200).json({
       status: result.output.returnval,
-      data: result.recordset || [],
+      data: result.recordset || 1,
       message:
         action === "get"
           ? "Bank details fetched successfully"

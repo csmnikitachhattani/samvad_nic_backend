@@ -3,6 +3,11 @@ import { getNewspapers, getNpUserWithNewspaper, getBankDetailsByUser, getGSTDeta
 import { noticeBoard } from "../controllers/noticeBoard.js";
 //import { npProfileHandler } from "../controllers/npProfileController.js";
 import { npBankDetailHandler } from "../controllers/npBankController.js";
+import {
+  getGstDetails,
+  checkGstExists,
+  updateGstDetails,
+} from "../controllers/npGSTController.js";
 
 
 
@@ -17,6 +22,11 @@ router.get("/npuser/gst/:user_id", getGSTDetailsByUser);
 
 
 // GET → /bank-detail/NP001
+
+
+router.get("/gst/:user_id", getGstDetails);
+router.get("/gst-exists/:user_id", checkGstExists);
+router.post("/gst/update", updateGstDetails);
 
 router.get("/bank-detail/:np_cd", (req, res) => {
     req.body = {
