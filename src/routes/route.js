@@ -45,4 +45,4 @@ router.get("/notice-board", noticeBoard)
 
 
 
-export default router;   // <-- IMPORTANT
+export default router;

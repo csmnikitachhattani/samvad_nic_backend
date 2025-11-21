@@ -114,9 +114,8 @@ export const updateGstDetails = async (req, res) => {
       .input("action", sql.VarChar(10), "update")
       .output("returnval", sql.Int)
       .execute("NP_GSTDetail_CRUD");
-
+      console.log("ye hai result " , result)
     const returnValue = result.output.returnval;
-
     if (returnValue === -1) {
       return res.status(400).json({
         success: false,
