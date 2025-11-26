@@ -19,10 +19,34 @@ export const getStates = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Error fetching newspaper list:", error);
+        console.error("Error fetching States list:", error);
         return res.status(500).json({
             success: false,
-            message: "Server error while fetching newspaper data",
+            message: "Server error while fetching States",
+        });
+    }
+}
+export const getDistricts = async (req, res) => {
+    try {
+        let pool = await sql.connect(config);
+
+        const query = `
+        select * from [dbo].[DistrictMaster]
+    `;
+ 
+        let result = await pool.request().query(query);
+        console.log("result data", result)
+        return res.status(200).json({
+            success: true,
+            count: result.recordset.length,
+            data: result.recordset,
+        });
+
+    } catch (error) {
+        console.error("Error fetching District list:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Server error while fetching Distric data",
         });
     }
 }

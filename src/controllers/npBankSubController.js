@@ -3,14 +3,14 @@ import sql from "mssql";
 import config from "../config/db.js";
 
 export const getNpBankSubDetails = async (req, res) => {
-  console.log("Backend: GET NP Bank Sub Details");
+  console.log("Backend: GET NP Bank Sub Details", req);
 
   try {
     const pool = await sql.connect(config);
 
     // Extract params from query OR params
     const {
-      action,        // get | get_cate | get_by_cate_id | check_exists_TAN_CST_PAN
+      action,
       user_id,
       np_cd,
       Cate_cd,
@@ -28,14 +28,13 @@ export const getNpBankSubDetails = async (req, res) => {
 
     // Prepare SQL request
     const request = pool.request();
-    request.input("user_id", sql.VarChar(5), user_id || null);
+    //request.input("user_id", sql.VarChar(5), user_id || null);
     request.input("np_cd", sql.VarChar(6), np_cd || null);
     request.input("Cate_cd", sql.VarChar(2), Cate_cd || null);
     request.input("TaxNo", sql.VarChar(10), TaxNo || null);
     request.input("max_sno", sql.Int, max_sno || null);
     request.input("ip_address", sql.VarChar(20), ip_address || null);
     request.input("action", sql.VarChar(10), action);
-
     request.output("returnval", sql.Int);
 
     // Execute stored procedure

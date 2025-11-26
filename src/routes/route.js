@@ -8,7 +8,8 @@ import {
   checkGstExists,
   updateGstDetails,
 } from "../controllers/npGSTController.js";
-import {getStates} from "../controllers/common.js"
+import {getNpBankSubDetails, } from "../controllers/npBankSubController.js"
+import {getStates, getDistricts} from "../controllers/common.js"
 
 
 
@@ -16,6 +17,7 @@ const router = express.Router();
 
 //common API
 router.get("/states", getStates)
+router.get("/district", getDistricts)
 
 // newspaper API
 router.get("/newspaper", getNewspapers);
@@ -33,6 +35,9 @@ router.get("/gst/:user_id", getGstDetails);
 router.get("/gst-exists/:user_id", checkGstExists);
 router.post("/gst/update", updateGstDetails);
 
+// bank detail
+router.get("/bank-sub-detail/:np_cd", getNpBankSubDetails)
+router.post("/np/bank-detail", getNpBankSubDetails)
 router.get("/bank-detail/:np_cd", (req, res) => {
     req.body = {
       np_cd: req.params.np_cd,
@@ -41,7 +46,7 @@ router.get("/bank-detail/:np_cd", (req, res) => {
     npBankDetailHandler(req, res);
   });
 
-// POST/EDIT → /bank-detail
+// bank-detail API
 router.post("/np/bank-detail", npBankDetailHandler);
 
 

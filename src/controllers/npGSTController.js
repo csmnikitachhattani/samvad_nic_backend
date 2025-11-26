@@ -85,7 +85,7 @@ export const updateGstDetails = async (req, res) => {
   
     try {
       const pool = await sql.connect(config);
-  
+      console.log(req.body)
       const {
         user_id,
         GST_legalName,
@@ -95,15 +95,25 @@ export const updateGstDetails = async (req, res) => {
         GST_DateOfRegistration,
         GST_TaxpayerType,
         ip_address,
-        by_user_id,
-        by_user_name,
       } = req.body;
   
       // Step 1: Get old values
       const existing = await pool
         .request()
         .input("user_id", sql.VarChar(5), user_id)
-        .query("SELECT * FROM NP_GSTDetail WHERE user_id = @user_id");
+        .query(`
+    SELECT GST_legalName, GST_number, GST_StateID, GST_StateText,
+           GST_DateOfRegistration, GST_TaxpayerType
+    FROM NewsPaper
+    WHERE np_cd = (
+        SELECT np_cd 
+        FROM NPUser_Login 
+        WHERE user_id = @user_id 
+          AND status = 1
+    )
+      AND status = 1
+`);
+  console.log(existing)
   
       if (existing.recordset.length === 0) {
         return res.status(404).json({ success: false, message: "GST record not found" });
@@ -128,10 +138,12 @@ export const updateGstDetails = async (req, res) => {
           message: "No changes detected",
         });
       }
+
+      console.log(noChange)
   
       // Step 3: Safe parse date
       const parsedDate = GST_DateOfRegistration ? new Date(GST_DateOfRegistration) : null;
-  
+      console.log(parsedDate)
       // Step 4: Update SP call
       const result = await pool
         .request()
@@ -143,14 +155,14 @@ export const updateGstDetails = async (req, res) => {
         .input("GST_DateOfRegistration", sql.Date, parsedDate)
         .input("GST_TaxpayerType", sql.NVarChar(20), GST_TaxpayerType)
         .input("ip_address", sql.VarChar(14), ip_address)
-        .input("by_user_id", sql.VarChar(10), by_user_id)
-        .input("by_user_name", sql.NVarChar(50), by_user_name)
+        //.input("by_user_id", sql.VarChar(10), by_user_id)
+        //.input("by_user_name", sql.NVarChar(50), by_user_name)
         .input("action", sql.VarChar(10), "update")
         .output("returnval", sql.Int)
         .execute("NP_GSTDetail_CRUD");
   
       const returnValue = result.output.returnval;
-  
+      console.log(returnValue)
       if (returnValue === -1) {
         return res.status(400).json({
           success: false,
