@@ -3,10 +3,8 @@ import sql from "mssql";
 import config from "../config/db.js"; // default export from db.js
 
 export const noticeBoard = async (req, res) => {
-  console.log("calling this")
   try {
     const pool = await sql.connect(config);
-
     const query = `
       SELECT 
         Sno,
@@ -23,7 +21,6 @@ export const noticeBoard = async (req, res) => {
     `;
 
     const result = await pool.request().query(query);
-    console.log("result", result)
     return res.status(200).json({
       success: true,
       count: result.recordset.length,

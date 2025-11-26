@@ -8,10 +8,15 @@ import {
   checkGstExists,
   updateGstDetails,
 } from "../controllers/npGSTController.js";
+import {getStates} from "../controllers/common.js"
 
 
 
 const router = express.Router();
+
+//common API
+router.get("/states", getStates)
+
 // newspaper API
 router.get("/newspaper", getNewspapers);
 router.get("/npuser/:user_id", getNpUserWithNewspaper);
