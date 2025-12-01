@@ -3,11 +3,11 @@ import sql from "mssql";
 import config from "../config/db.js";
 
 export const getNpBankSubDetails = async (req, res) => {
-  console.log("Backend: GET NP Bank Sub Details", req);
+  //console.log("Backend: GET NP Bank Sub Details", req.body);
 
   try {
     const pool = await sql.connect(config);
-
+    
     // Extract params from query OR params
     const {
       action,
@@ -17,7 +17,7 @@ export const getNpBankSubDetails = async (req, res) => {
       TaxNo,
       max_sno,
       ip_address,
-    } = req.query;
+    } = req.body;
 
     if (!action) {
       return res.status(400).json({
@@ -28,7 +28,7 @@ export const getNpBankSubDetails = async (req, res) => {
 
     // Prepare SQL request
     const request = pool.request();
-    //request.input("user_id", sql.VarChar(5), user_id || null);
+    request.input("user_id", sql.VarChar(5), user_id || null);
     request.input("np_cd", sql.VarChar(6), np_cd || null);
     request.input("Cate_cd", sql.VarChar(2), Cate_cd || null);
     request.input("TaxNo", sql.VarChar(10), TaxNo || null);
@@ -41,7 +41,7 @@ export const getNpBankSubDetails = async (req, res) => {
     const result = await request.execute("NP_BankDetail_Sub_CRUD");
 
     const returnVal = result.output.returnval;
-
+    //console.log("yahaan tk pohoch hh ")
     if (returnVal === -1) {
       return res.status(400).json({
         success: false,

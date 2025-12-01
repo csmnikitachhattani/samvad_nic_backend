@@ -102,6 +102,7 @@ export const getNpUserWithNewspaper = async (req, res) => {
           NPUser_Login.address as loginaddr, 
           NPUser_Login.status, 
           NewsPaper.District_Text,
+          NewsPaper.State_Text,
           NewsPaper.np_name + '-' + NewsPaper.edition AS np_name, 
           NewsPaper.NPADDR1 + ',' + ISNULL(NewsPaper.NPADDR2 + ',', '') + ISNULL(NewsPaper.NPADDR3 + ',', '') +
           NewsPaper.NPCITY_text + ',' + NewsPaper.NPSTATE_text + ',' + NewsPaper.NPPOSTAL_cd AS address  
