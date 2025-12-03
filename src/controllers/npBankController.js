@@ -1,10 +1,7 @@
 // controllers/npBankController.js
 import sql from "mssql";
 import config from "../config/db.js";
-
-/* ============================================================
-   1️⃣ GET — Fetch NP Bank Details
-   ============================================================ */
+// Get Bank Detail
 export const getNpBankDetails = async (req, res) => {
   console.log("GET @ NP Bank Detail", req.params);
 
@@ -63,11 +60,7 @@ export const getNpBankDetails = async (req, res) => {
   }
 };
 
-
-
-/* ============================================================
-   2️⃣ POST / EDIT / VERIFY — Modify/Add NP Bank Details
-   ============================================================ */
+// Edit / Update API
 export const postOrEditNpBankDetails = async (req, res) => {
   console.log("POST/EDIT @ NP Bank Detail", req.body);
 
