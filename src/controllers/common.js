@@ -11,7 +11,6 @@ export const getStates = async (req, res) => {
     `;
  
         let result = await pool.request().query(query);
-        console.log("result data", result)
         return res.status(200).json({
             success: true,
             count: result.recordset.length,

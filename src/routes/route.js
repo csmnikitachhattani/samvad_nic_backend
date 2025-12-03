@@ -1,7 +1,6 @@
 import express from "express";
 import { getNewspapers, getNpUserWithNewspaper, getBankDetailsByUser, getGSTDetailsByUser, updateNpUserWithNewspaper, npProfileHandler } from "../controllers/newspaper.js";
 import { noticeBoard } from "../controllers/noticeBoard.js";
-//import { npProfileHandler } from "../controllers/npProfileController.js";
 import { getNpBankDetails, postOrEditNpBankDetails} from "../controllers/npBankController.js";
 import {
   getGstDetails,

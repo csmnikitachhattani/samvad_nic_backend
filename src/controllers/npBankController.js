@@ -47,10 +47,10 @@ export const getNpBankDetails = async (req, res) => {
     request.output("returnval", sql.Int);
 
     const result = await request.execute("NP_BankDetail_Main_CRUD");
-
+    
     return res.status(200).json({
       status: result.output.returnval,
-      data: result.recordset || [],
+      data: result.recordset,
       message: "Bank details fetched successfully",
     });
 
