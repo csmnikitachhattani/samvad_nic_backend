@@ -9,6 +9,7 @@ import {
 } from "../controllers/npGSTController.js";
 import {getNpBankSubDetails, } from "../controllers/npBankSubController.js"
 import {getStates, getDistricts} from "../controllers/common.js"
+import {getROList, publishRO} from "../controllers/realeaseOrder.js"
 
 
 
@@ -31,6 +32,9 @@ router.post("/np/bank-detail", getNpBankSubDetails)
 // Bank Detail API
 router.get("/np/bank-detail/:np_cd", getNpBankDetails);
 router.post("/np/bank-detail/edit", postOrEditNpBankDetails);
+// Realease Order API
+router.get("/ro/list", getROList);
+router.post("/ro/publish-ro", publishRO);
 // notice board API
 router.get("/notice-board", noticeBoard)
 
