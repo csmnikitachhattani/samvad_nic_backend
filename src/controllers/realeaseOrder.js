@@ -171,6 +171,56 @@ export const getRODetail = async (req, res) => {
     });
   }
 };
+
+export const publishPrecheck = async (req, res) => {
+  console.log(req.body)
+  try {
+    const {
+      advt_no,
+      financial_year,
+      ro_no,
+      user_id,
+      np_news_cd
+    } = req.body.params;
+
+    // Basic validation
+    if (!advt_no || !financial_year || !ro_no || !user_id || !np_news_cd) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required parameters'
+      });
+    }
+
+   
+    let pool = await sql.connect(config);
+
+
+    const result = await pool.request()
+      .input('advt_no', sql.VarChar(10), advt_no)
+      .input('financial_year', sql.VarChar(12), financial_year)
+      .input('ro_no', sql.VarChar(10), ro_no)
+      .input('user_id', sql.VarChar(5), user_id)
+      .input('np_news_cd', sql.Int, np_news_cd)
+      .execute('dbo.A_Publish_PRECHECK');
+
+    // Stored procedure returns a single column via SELECT CASE
+    const response = result.recordset?.[0];
+
+    res.status(200).json({
+      success: true,
+      data: response
+    });
+
+  } catch (error) {
+    console.error('Publish Precheck Error:', error);
+
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message
+    });
+  }
+};
   
   
   

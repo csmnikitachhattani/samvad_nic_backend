@@ -73,7 +73,9 @@ exports.publishPrecheck = async (req, res) => {
         });
       }
   
-      const pool = await poolPromise;
+     
+      let pool = await sql.connect(config);
+
   
       const result = await pool.request()
         .input('advt_no', sql.VarChar(10), advt_no)
