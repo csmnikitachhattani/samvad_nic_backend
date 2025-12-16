@@ -1,60 +1,6 @@
 import sql from "mssql";
 import config from "../config/db.js";
 
-// ------------------------------------------------
-// GET RO LIST (BODY INPUT)
-// ------------------------------------------------
-// export const getROList = async (req, res) => {
-//   console.log("Backend: GET RO List", req.query);
-  
-//   try {
-//     const pool = await sql.connect(config);
-
-//     const {
-//       user_id,
-//       fin_year,
-//       np_cd,
-//       ip_address,
-//     //   by_user_id,
-//     //   by_user_name
-//     } = req.body || req.query;  // <-- now using req.body
-
-//     const result = await pool
-//       .request()
-//       .input("user_id", sql.VarChar(5), user_id)
-//       .input("fin_year", sql.VarChar(9), fin_year)
-//       .input("np_cd", sql.VarChar(6), np_cd)
-//       .input("ip_address", sql.VarChar(14), ip_address)
-//     //   .input("by_user_id", sql.VarChar(10), by_user_id)
-//     //   .input("by_user_name", sql.NVarChar(50), by_user_name)
-//       .input("action", sql.VarChar(10), "get")
-//       .output("returnval", sql.Int)
-//       .execute("NP_ROList");
-
-//     const returnValue = result.output.returnval;
-
-//     if (returnValue === -1) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Invalid input parameters",
-//       });
-//     }
-
-//     return res.status(200).json({
-//       success: true,
-//       count: result.recordset.length,
-//       data: result.recordset,
-//     });
-
-//   } catch (err) {
-//     console.error("Error: GET RO LIST", err.message);
-//     return res.status(500).json({
-//       success: false,
-//       message: err.message,
-//     });
-//   }
-// };
-
 
 export const getROList = async (req, res) => {
     console.log("Backend: GET RO List", req.query);
@@ -124,15 +70,15 @@ export const publishRO = async (req, res) => {
     } = req.body;
   
     // Validate minimum inputs
-    if (!avak_ref_id || !advt_no || !np_news_cd_list || !publish_status_cd) {
+    if (!avak_ref_id || !advt_no || !publish_status_cd) {
       return res.status(400).json({
         success: false,
-        message: "Missing required fields (avak_ref_id, advt_no, np_news_cd_list, publish_status_cd)",
+        message: "Missing required fields (avak_ref_id, advt_no, publish_status_cd)",
       });
     }
   
     // Auto-generate missing fields
-    const financial_year = "2025-2026";   // or calculate dynamically
+    const financial_year = "2024-2025";   // or calculate dynamically
     const action_name = "Publish RO";
     const status_reason_cd = "01";
     const action_by_section_cd = "NP";
@@ -176,7 +122,55 @@ export const publishRO = async (req, res) => {
         error: err.message,
       });
     }
-  };
+};
+
+export const getRODetail = async (req, res) => {
+  try {
+    const { financial_year, avak_ref_id, advt_no } = req.query;
+
+    if (!financial_year || !avak_ref_id || !advt_no) {
+      return res.status(400).json({
+        status: false,
+        message: "financial_year, avak_ref_id and advt_no are required",
+      });
+    }
+
+    let pool = await sql.connect(config);
+
+    const query = `
+      SELECT TOP 1
+          financial_year,
+          advt_no,
+          current_status,
+          publish_status,
+          action_name,
+          update_date = action_date,
+          update_time = action_time
+      FROM AdvtCurrentStatus
+      WHERE 
+          financial_year = @financial_year
+          AND advt_no = @advt_no
+    `;
+
+    const result = await pool
+      .request()
+      .input("financial_year", sql.VarChar, financial_year)
+      .input("advt_no", sql.VarChar, advt_no)
+      .query(query);
+
+    return res.status(200).json({
+      status: true,
+      data: result.recordset[0] || null,
+    });
+
+  } catch (error) {
+    console.error("Error fetching single RO detail:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal server error",
+    });
+  }
+};
   
   
   
