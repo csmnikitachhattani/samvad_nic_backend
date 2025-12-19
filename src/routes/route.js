@@ -9,7 +9,7 @@ import {
 } from "../controllers/npGSTController.js";
 import {getNpBankSubDetails, } from "../controllers/npBankSubController.js"
 import {getStates, getDistricts} from "../controllers/common.js"
-import {getROList, publishRO,  getRODetail, publishPrecheck} from "../controllers/realeaseOrder.js"
+import {getROList, publishRO,  getRODetail, publishPrecheck, getActionStatus} from "../controllers/realeaseOrder.js"
 //import {publishPrecheck} from "../controllers/ROPublish.js"
 
 
@@ -37,7 +37,7 @@ router.post("/np/bank-detail/edit", postOrEditNpBankDetails);
 router.get("/ro/list", getROList);
 router.post("/ro/publish-ro", publishRO);
 router.get("/ro/details", getRODetail);
-
+router.get("/ro/actions/list", getActionStatus);
 router.post('/ro/publish-precheck', publishPrecheck)
 // notice board API
 router.get("/notice-board", noticeBoard)

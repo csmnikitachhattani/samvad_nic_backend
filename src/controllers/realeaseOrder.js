@@ -45,7 +45,7 @@ export const getROList = async (req, res) => {
         total: fullData.length,
         page,
         limit,
-        data: paginated
+        data: fullData
       });
   
     } catch (err) {
@@ -56,8 +56,6 @@ export const getROList = async (req, res) => {
       });
     }
 };
-  
-
 export const publishRO = async (req, res) => {
     console.log("Minimal Publish RO request:", req.body);
   
@@ -203,8 +201,9 @@ export const publishPrecheck = async (req, res) => {
       .input('np_news_cd', sql.Int, np_news_cd)
       .execute('dbo.A_Publish_PRECHECK');
 
-    // Stored procedure returns a single column via SELECT CASE
-    const response = result.recordset?.[0];
+    // Stored procedure returns a single column via SELECT 
+    console.log(result)
+    const response = result.recordset?.[0][""];
 
     res.status(200).json({
       success: true,
@@ -221,6 +220,36 @@ export const publishPrecheck = async (req, res) => {
     });
   }
 };
-  
-  
-  
+
+export const getActionStatus = async (req, res) => {
+  try {
+    const pool = await sql.connect(config);
+
+    const query = `
+      select ActionStatus.action_status_name as action_name,
+             ActionStatus.action_status_cd + '/' + ActionStatus.update_field_name + '/' + ActionStatus.action_priority AS action_status_cd,
+             order_no
+      from ActionStatus
+      where action_status_cd = '08'
+      union
+      select action_status_name,
+             action_status_cd + '/' + update_field_name + '/' + ActionStatus.action_priority AS action_status_cd,
+             order_no
+      from ActionStatus
+      where action_status_cd = '18'
+    `;
+
+    const result = await pool.request().query(query);
+
+    res.status(200).json({
+      success: true,
+      data: result.recordset
+    });
+  } catch (error) {
+    console.error("Error fetching action status:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error"
+    });
+  }
+};
