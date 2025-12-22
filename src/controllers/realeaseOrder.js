@@ -123,7 +123,7 @@ export const publishRO = async (req, res) => {
     const { 
       avak_ref_id, 
       advt_no, 
-      //np_news_cd_list, 
+      np_news_cd_list, 
       publish_status_cd,
       remark = "" 
     } = req.body;
@@ -142,27 +142,27 @@ export const publishRO = async (req, res) => {
     const status_reason_cd = "";
     const action_by_section_cd = "NP";
     const action_taken_by = req.user?.id || "SYS01";
-    const action_taken_by_type_cd = "USER";
+    const action_taken_by_type_cd = "01";
     const action_taken_by_user_id = "00020";
     const ip_address = req.ip || null;
-    const np_news_cd_list = '1-2-3-4'
+    //const np_news_cd_list = '1-2-3-4'
   
     try {
       const pool = await sql.connect(config);
   
       const result = await pool.request()
-      .input("avak_ref_id", sql.VarChar(20), avak_ref_id)
-      .input("advt_no", sql.VarChar(20), advt_no)
+      .input("avak_ref_id", sql.VarChar(10), avak_ref_id)
+      .input("advt_no", sql.VarChar(10), advt_no)
       .input("remark", sql.VarChar(sql.MAX), remark)
       .input("np_news_cd_list", sql.VarChar(sql.MAX), np_news_cd_list)
-      .input("publish_status_cd", sql.VarChar(50), '08')
+      .input("publish_status_cd", sql.VarChar(2), '08')
       .input("action_name", sql.VarChar(50), action_name)
       .input("status_reason_cd", sql.VarChar(50), status_reason_cd)
       .input("financial_year", sql.VarChar(12), financial_year)
-      .input("action_by_section_cd", sql.VarChar(30), action_by_section_cd)
+      .input("action_by_section_cd", sql.VarChar(3), action_by_section_cd)
       .input("action_taken_by", sql.VarChar(50), action_taken_by)
       .input("action_taken_by_type_cd", sql.VarChar(15), action_taken_by_type_cd)
-      .input("action_taken_by_user_id", sql.VarChar(50), action_taken_by_user_id)
+      ///.input("action_taken_by_user_id", sql.VarChar(50), action_taken_by_user_id)
       .input("ip_address", sql.NVarChar(20), ip_address)
       
   
