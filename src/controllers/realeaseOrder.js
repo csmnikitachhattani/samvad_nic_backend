@@ -56,13 +56,74 @@ export const getROList = async (req, res) => {
       });
     }
 };
+export const rejectRO = async (req, res) => {
+  try {
+    const {
+      advt_no,
+      avak_ref_id,
+      financial_year,
+      remark,
+      reject_status_cd,
+      status_reason_cd,
+      np_news_cd,
+      reject_by_user_id,
+      ip_address
+    } = req.body;
+
+    // 🔒 Basic validation
+    if (!advt_no || !avak_ref_id || !financial_year || !reject_status_cd || !np_news_cd || !reject_by_user_id) {
+      return res.status(400).json({
+        success: false,
+        message: "Required fields are missing"
+      });
+    }
+
+    const pool = await sql.connect(sqlConfig);
+
+    const result = await pool.request()
+      .input("advt_no", sql.VarChar(50), advt_no)
+      .input("avak_ref_id", sql.VarChar(50), avak_ref_id)
+      .input("financial_year", sql.VarChar(9), financial_year)
+      .input("remark", sql.NVarChar(300), remark || "")
+      .input("reject_status_cd", sql.VarChar(2), reject_status_cd)
+      .input("status_reason_cd", sql.VarChar(2), status_reason_cd || "")
+      .input("np_news_cd", sql.Int, parseInt(np_news_cd))
+      .input("reject_by_user_id", sql.VarChar(5), reject_by_user_id)
+      .input("ip_address", sql.VarChar(20), ip_address || "")
+      .output("returnval", sql.Int)
+      .execute("A_RejectRO");
+
+    const returnVal = result.output.returnval;
+
+    if (returnVal === 1) {
+      return res.status(200).json({
+        success: true,
+        message: "RO rejected successfully"
+      });
+    } else {
+      return res.status(500).json({
+        success: false,
+        message: "RO rejection failed"
+      });
+    }
+
+  } catch (error) {
+    console.error("Reject RO Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: error.message
+    });
+  }
+};
 export const publishRO = async (req, res) => {
     console.log("Minimal Publish RO request:", req.body);
   
     const { 
       avak_ref_id, 
       advt_no, 
-      np_news_cd_list, 
+      //np_news_cd_list, 
       publish_status_cd,
       remark = "" 
     } = req.body;
@@ -76,32 +137,34 @@ export const publishRO = async (req, res) => {
     }
   
     // Auto-generate missing fields
-    const financial_year = "2024-2025";   // or calculate dynamically
+    const financial_year = "2024-2025";
     const action_name = "Publish RO";
-    const status_reason_cd = "01";
+    const status_reason_cd = "";
     const action_by_section_cd = "NP";
-    const action_taken_by = req.user?.id || "SYS01"; 
+    const action_taken_by = req.user?.id || "SYS01";
     const action_taken_by_type_cd = "USER";
-    const ip_address = req.ip;
+    const action_taken_by_user_id = "00020";
+    const ip_address = req.ip || null;
+    const np_news_cd_list = '1-2-3-4'
   
     try {
       const pool = await sql.connect(config);
   
       const result = await pool.request()
-        .input("avak_ref_id", sql.VarChar(10), avak_ref_id)
-        .input("advt_no", sql.VarChar(10), advt_no)
-        .input("remark", sql.VarChar(sql.MAX), remark)
-        .input("np_news_cd_list", sql.VarChar(sql.MAX), np_news_cd_list)
-        .input("publish_status_cd", sql.VarChar(2), publish_status_cd)
-  
-        // auto-filled
-        .input("action_name", sql.VarChar(50), action_name)
-        .input("status_reason_cd", sql.VarChar(2), status_reason_cd)
-        .input("financial_year", sql.VarChar(12), financial_year)
-        .input("action_by_section_cd", sql.VarChar(3), action_by_section_cd)
-        .input("action_taken_by", sql.VarChar(5), action_taken_by)
-        .input("action_taken_by_type_cd", sql.VarChar(15), action_taken_by_type_cd)
-        .input("ip_address", sql.NVarChar(20), ip_address)
+      .input("avak_ref_id", sql.VarChar(20), avak_ref_id)
+      .input("advt_no", sql.VarChar(20), advt_no)
+      .input("remark", sql.VarChar(sql.MAX), remark)
+      .input("np_news_cd_list", sql.VarChar(sql.MAX), np_news_cd_list)
+      .input("publish_status_cd", sql.VarChar(50), '08')
+      .input("action_name", sql.VarChar(50), action_name)
+      .input("status_reason_cd", sql.VarChar(50), status_reason_cd)
+      .input("financial_year", sql.VarChar(12), financial_year)
+      .input("action_by_section_cd", sql.VarChar(30), action_by_section_cd)
+      .input("action_taken_by", sql.VarChar(50), action_taken_by)
+      .input("action_taken_by_type_cd", sql.VarChar(15), action_taken_by_type_cd)
+      .input("action_taken_by_user_id", sql.VarChar(50), action_taken_by_user_id)
+      .input("ip_address", sql.NVarChar(20), ip_address)
+      
   
         .output("returnval", sql.Int)
         .execute("A_Publish_RO");
@@ -113,11 +176,15 @@ export const publishRO = async (req, res) => {
       });
   
     } catch (err) {
-      console.error("Error:", err);
-      return res.status(500).json({
+      console.error("SQL ERROR:", err);
+    
+      res.status(500).json({
         success: false,
         message: "Server Error",
-        error: err.message,
+        error:
+          err.originalError?.info?.message ||
+          err.precedingErrors?.[0]?.message ||
+          err.message
       });
     }
 };
@@ -179,7 +246,7 @@ export const publishPrecheck = async (req, res) => {
       ro_no,
       user_id,
       np_news_cd
-    } = req.body.params;
+    } = req.body;
 
     // Basic validation
     if (!advt_no || !financial_year || !ro_no || !user_id || !np_news_cd) {

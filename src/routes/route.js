@@ -9,7 +9,7 @@ import {
 } from "../controllers/npGSTController.js";
 import {getNpBankSubDetails, } from "../controllers/npBankSubController.js"
 import {getStates, getDistricts} from "../controllers/common.js"
-import {getROList, publishRO,  getRODetail, publishPrecheck, getActionStatus} from "../controllers/realeaseOrder.js"
+import {getROList, publishRO, rejectRO,  getRODetail, publishPrecheck, getActionStatus} from "../controllers/realeaseOrder.js"
 //import {publishPrecheck} from "../controllers/ROPublish.js"
 
 
@@ -36,6 +36,7 @@ router.post("/np/bank-detail/edit", postOrEditNpBankDetails);
 // Realease Order API
 router.get("/ro/list", getROList);
 router.post("/ro/publish-ro", publishRO);
+router.post("/ro/reject-ro", rejectRO)
 router.get("/ro/details", getRODetail);
 router.get("/ro/actions/list", getActionStatus);
 router.post('/ro/publish-precheck', publishPrecheck)
