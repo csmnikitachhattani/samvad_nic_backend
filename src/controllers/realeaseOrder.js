@@ -317,25 +317,50 @@ export const getActionStatus = async (req, res) => {
     });
   }
 };
-export const ROAction = async (req, res) => {
+export const uploadPublishProof = async (req, res) => {
   try {
     const {
-      advt_no,
-      avak_ref_id,
-      remark,
-      ro_no,
-      action_cd,
-      action_name,
-      action_reason_cd,
-      financial_year,
-      action_by_section_cd,
-      action_taken_by,
-      action_taken_by_type_cd,
-      ip_address
+      advt_no, fin_year, ro_no, content_type,
+      file_size_in_bytes, file_data, link_name,
+      advt_file_path, enable_status, ip_address
     } = req.body;
 
-    // 🔒 Basic validation
-    if (!advt_no || !avak_ref_id || !ro_no || !financial_year || !action_cd || !action_name) {
+    if (!advt_no || !fin_year || !ro_no || !file_data) {
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
+
+    const pool = await sql.connect(config);
+
+    const result = await pool.request()
+      .input("advt_no", sql.VarChar(10), advt_no)
+      .input("fin_year", sql.VarChar(6), fin_year)
+      .input("ro_no", sql.Int, ro_no)
+      .input("content_type", sql.NVarChar(100), content_type)
+      .input("file_size_in_bytes", sql.Numeric(18, 0), file_size_in_bytes)
+      .input("file_data", sql.VarBinary(sql.MAX), Buffer.from(file_data, "base64"))
+      .input("link_name", sql.NVarChar(250), link_name)
+      .input("advt_file_path", sql.NVarChar(150), advt_file_path)
+      .input("enable_status", sql.NVarChar(1), enable_status || "Y")
+      .input("ip_address", sql.VarChar(20), ip_address || "")
+      .input("action", sql.VarChar(50), "upload_publish_proof")
+      .output("returnval", sql.Int)
+      .execute("NP_RO_Actions");
+
+    return result.output.returnval === 1
+      ? res.json({ success: true, message: "Proof uploaded successfully" })
+      : res.status(500).json({ success: false, message: "Upload failed" });
+
+  } catch (error) {
+    console.error("Upload Proof Error:", error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getProofDetail = async (req, res) => {
+  try {
+    const { user_id, np_cd, fin_year, advt_no, ro_no } = req.body;
+
+    if (!user_id || !np_cd || !fin_year || !advt_no || !ro_no) {
       return res.status(400).json({
         success: false,
         message: "Required fields are missing"
@@ -345,43 +370,24 @@ export const ROAction = async (req, res) => {
     const pool = await sql.connect(config);
 
     const result = await pool.request()
-      .input("avak_ref_id", sql.VarChar(50), avak_ref_id)
-      .input("advt_no", sql.VarChar(50), advt_no)
-      .input("remark", sql.NVarChar(300), remark || "")
+      .input("user_id", sql.VarChar(5), user_id)
+      .input("np_cd", sql.VarChar(6), np_cd)
+      .input("fin_year", sql.VarChar(6), fin_year)
+      .input("advt_no", sql.VarChar(10), advt_no)
       .input("ro_no", sql.Int, parseInt(ro_no))
-      .input("action_cd", sql.VarChar(2), action_cd)
-      .input("action_name", sql.VarChar(50), action_name)
-      .input("action_reason_cd", sql.VarChar(2), action_reason_cd || null)
-      .input("fin_year", sql.VarChar(9), financial_year)
-      .input("action_by_section_cd", sql.VarChar(3), action_by_section_cd || null)
-      .input("action_taken_by", sql.VarChar(5), action_taken_by || null)
-      .input("action_taken_by_type_cd", sql.VarChar(15), action_taken_by_type_cd || null)
-      .input("ip_address", sql.VarChar(20), ip_address || "")
-      .output("returnval", sql.Int)
-      .execute("A_Publish_RO");
+      .input("action", sql.VarChar(50), "get_proof_detail")
+      .execute("NP_RO_Actions");
 
-    const returnVal = result.output.returnval;
-
-    if (returnVal === 1) {
-      return res.status(200).json({
-        success: true,
-        message: "RO published successfully"
-      });
-    } else {
-      return res.status(500).json({
-        success: false,
-        message: "RO publication failed"
-      });
-    }
+    return res.status(200).json({
+      success: true,
+      data: result.recordset
+    });
 
   } catch (error) {
-    console.error("Publish RO Error:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Server Error",
-      error: error.message
-    });
+    console.error("Get Proof Detail Error:", error);
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
+
+
 
