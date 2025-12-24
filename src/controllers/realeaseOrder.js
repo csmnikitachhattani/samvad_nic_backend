@@ -1,7 +1,8 @@
 import sql from "mssql";
 import config from "../config/db.js";
+import multer from "multer";
 
-
+const upload = multer({ limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB
 export const getROList = async (req, res) => {
     console.log("Backend: GET RO List", req.query);
   
@@ -317,45 +318,87 @@ export const getActionStatus = async (req, res) => {
     });
   }
 };
-export const uploadPublishProof = async (req, res) => {
-  try {
-    const {
-      advt_no, fin_year, ro_no, content_type,
-      file_size_in_bytes, file_data, link_name,
-      advt_file_path, enable_status, ip_address
-    } = req.body;
+// export const uploadPublishProof = async (req, res) => {
+//   try {
+//     const {
+//       advt_no, fin_year, ro_no, content_type,
+//       file_size_in_bytes, file_data, link_name,
+//       advt_file_path, enable_status, ip_address
+//     } = req.body;
 
-    if (!advt_no || !fin_year || !ro_no || !file_data) {
-      return res.status(400).json({ success: false, message: "Missing required fields" });
+//     if (!advt_no || !fin_year || !ro_no || !file_data) {
+//       return res.status(400).json({ success: false, message: "Missing required fields" });
+//     }
+
+//     const pool = await sql.connect(config);
+
+//     const result = await pool.request()
+//       .input("advt_no", sql.VarChar(10), advt_no)
+//       .input("fin_year", sql.VarChar(6), fin_year)
+//       .input("ro_no", sql.Int, ro_no)
+//       .input("content_type", sql.NVarChar(100), content_type)
+//       .input("file_size_in_bytes", sql.Numeric(18, 0), file_size_in_bytes)
+//       .input("file_data", sql.VarBinary(sql.MAX), Buffer.from(file_data, "base64"))
+//       .input("link_name", sql.NVarChar(250), link_name)
+//       .input("advt_file_path", sql.NVarChar(150), advt_file_path)
+//       .input("enable_status", sql.NVarChar(1), enable_status || "Y")
+//       .input("ip_address", sql.VarChar(20), ip_address || "")
+//       .input("action", sql.VarChar(50), "upload_publish_proof")
+//       .output("returnval", sql.Int)
+//       .execute("NP_RO_Actions");
+
+//     return result.output.returnval === 1
+//       ? res.json({ success: true, message: "Proof uploaded successfully" })
+//       : res.status(500).json({ success: false, message: "Upload failed" });
+
+//   } catch (error) {
+//     console.error("Upload Proof Error:", error);
+//     return res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+
+export const uploadPublishProof = [
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      const { advt_no, fin_year, ro_no, ip_address } = req.body;
+      const file = req.file;
+
+      if (!file || !advt_no || !fin_year || !ro_no) {
+        return res.status(400).json({
+          success: false,
+          message: "Missing required fields"
+        });
+      }
+
+      const pool = await sql.connect(config);
+
+      const result = await pool.request()
+        .input("advt_no", sql.VarChar(10), advt_no)
+        .input("fin_year", sql.VarChar(6), fin_year)
+        .input("ro_no", sql.Int, parseInt(ro_no))
+        .input("content_type", sql.NVarChar(100), file.mimetype)
+        .input("file_size_in_bytes", sql.Numeric(18, 0), file.size)
+        .input("file_data", sql.VarBinary(sql.MAX), file.buffer)
+        .input("link_name", sql.NVarChar(250), file.originalname)
+        .input("advt_file_path", sql.NVarChar(150), `/uploads/${file.originalname}`)
+        .input("enable_status", sql.NVarChar(1), "Y")
+        .input("ip_address", sql.VarChar(20), ip_address || "")
+        .input("action", sql.VarChar(50), "upload_publish_proof")
+        .output("returnval", sql.Int)
+        .execute("NP_RO_Actions");
+
+      return result.output.returnval === 1
+        ? res.json({ success: true, message: "Proof uploaded successfully" })
+        : res.status(500).json({ success: false, message: "Upload failed" });
+
+    } catch (error) {
+      console.error("Upload Proof Error:", error);
+      res.status(500).json({ success: false, message: error.message });
     }
-
-    const pool = await sql.connect(config);
-
-    const result = await pool.request()
-      .input("advt_no", sql.VarChar(10), advt_no)
-      .input("fin_year", sql.VarChar(6), fin_year)
-      .input("ro_no", sql.Int, ro_no)
-      .input("content_type", sql.NVarChar(100), content_type)
-      .input("file_size_in_bytes", sql.Numeric(18, 0), file_size_in_bytes)
-      .input("file_data", sql.VarBinary(sql.MAX), Buffer.from(file_data, "base64"))
-      .input("link_name", sql.NVarChar(250), link_name)
-      .input("advt_file_path", sql.NVarChar(150), advt_file_path)
-      .input("enable_status", sql.NVarChar(1), enable_status || "Y")
-      .input("ip_address", sql.VarChar(20), ip_address || "")
-      .input("action", sql.VarChar(50), "upload_publish_proof")
-      .output("returnval", sql.Int)
-      .execute("NP_RO_Actions");
-
-    return result.output.returnval === 1
-      ? res.json({ success: true, message: "Proof uploaded successfully" })
-      : res.status(500).json({ success: false, message: "Upload failed" });
-
-  } catch (error) {
-    console.error("Upload Proof Error:", error);
-    return res.status(500).json({ success: false, message: error.message });
   }
-};
-
+];
 export const getProofDetail = async (req, res) => {
   try {
     const { user_id, np_cd, fin_year, advt_no, ro_no } = req.body;
